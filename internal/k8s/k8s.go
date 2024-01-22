@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mime/multipart"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
@@ -16,6 +17,7 @@ type K8S interface {
 	GetClusterName() string
 	HasAdminPrivileges(ctx context.Context) (bool, error)
 	CreateNamespace(ctx context.Context, name string) error
+	ListNamespaces(ctx context.Context) (*corev1.NamespaceList, error)
 }
 
 type k8s struct {
@@ -29,6 +31,8 @@ func New(c api.Config) (K8S, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new default client config: %w", err)
 	}
+
+	// TODO: set r.UserAgent
 
 	s, err := kubernetes.NewForConfig(r)
 	if err != nil {
@@ -78,6 +82,8 @@ func NewFromFormFile(f *multipart.FileHeader) (K8S, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new default client config: %w", err)
 	}
+
+	// TODO: set r.UserAgent
 
 	client, err := kubernetes.NewForConfig(r)
 	if err != nil {

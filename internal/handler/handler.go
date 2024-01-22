@@ -28,6 +28,7 @@ func (h *Handler) Start() error {
 	})).Group(h.Config.ServerRoutePrefix).
 		Get("/clusters", h.listClusters).
 		Post("/clusters", h.addCluster).
+		Get("/clusters/:name/namespaces", h.listNamespaces).
 		Post("/clusters/:name/namespaces", h.addNamespace)
 
 	return f.Listen(h.Config.ServerAddr)

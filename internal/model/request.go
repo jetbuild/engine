@@ -36,3 +36,21 @@ func (r *AddNamespaceRequest) Bind(ctx *fiber.Ctx, validator *validator.Validate
 
 	return nil
 }
+
+type ListNamespacesRequest struct {
+	Params struct {
+		ClusterName string `params:"name" validate:"required"`
+	}
+}
+
+func (r *ListNamespacesRequest) Bind(ctx *fiber.Ctx, validator *validator.Validate) error {
+	if err := ctx.ParamsParser(&r.Params); err != nil {
+		return fmt.Errorf("failed to parse request params: %w", err)
+	}
+
+	if err := validator.Struct(&r.Params); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	return nil
+}
