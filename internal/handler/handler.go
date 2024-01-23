@@ -26,6 +26,8 @@ func (h *Handler) Start() error {
 	f.Use(recover.New(recover.Config{
 		EnableStackTrace: true,
 	})).Group(h.Config.ServerRoutePrefix).
+		Get("/livez", h.checkHealth).
+		Get("/readyz", h.checkHealth).
 		Get("/clusters", h.listClusters).
 		Post("/clusters", h.addCluster).
 		Get("/clusters/:name/namespaces", h.listNamespaces).

@@ -22,6 +22,7 @@ type Vault[T any] interface {
 	List(ctx context.Context) (map[string]T, error)
 	Remove(ctx context.Context, name string) error
 	Update(ctx context.Context, name string, model T) error
+	Ping(ctx context.Context) error
 }
 
 type Client struct {
@@ -171,6 +172,15 @@ func (v *vault[T]) Update(ctx context.Context, name string, model T) error {
 			"items": items,
 		},
 	}, va.WithMountPath(v.client.engine)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (v *vault[T]) Ping(ctx context.Context) error {
+	_, err := v.client.System.ReadHealthStatus(ctx, va.WithMountPath(v.client.engine))
+	if err != nil {
 		return err
 	}
 
