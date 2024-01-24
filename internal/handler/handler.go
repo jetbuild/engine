@@ -15,6 +15,7 @@ type Handler struct {
 	Validator         *validator.Validate
 	ClusterRepository vault.Vault[model.Cluster]
 	Config            *config.Config
+	Components        []model.Component
 }
 
 func (h *Handler) Start() error {
@@ -31,7 +32,8 @@ func (h *Handler) Start() error {
 		Get("/clusters", h.listClusters).
 		Post("/clusters", h.addCluster).
 		Get("/clusters/:name/namespaces", h.listNamespaces).
-		Post("/clusters/:name/namespaces", h.addNamespace)
+		Post("/clusters/:name/namespaces", h.addNamespace).
+		Get("/components", h.listComponents)
 
 	return f.Listen(h.Config.ServerAddr)
 }

@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/jetbuild/engine/internal/component"
 	"github.com/jetbuild/engine/internal/config"
 	"github.com/jetbuild/engine/internal/handler"
 	"github.com/jetbuild/engine/internal/model"
@@ -23,9 +26,24 @@ func main() {
 		os.Exit(1)
 	}
 
-	v, err := vault.New(c.VaultAddr, c.VaultToken, c.VaultEngine, "JetBuild Secret Storage")
+	timeout, err := time.ParseDuration(c.ServerInitTimeout)
+	if err != nil {
+		logger.Error("failed to parse server init timeout duration", "error", err)
+		os.Exit(1)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	v, err := vault.New(ctx, c.VaultAddr, c.VaultToken, c.VaultEngine, c.VaultEngineDescription)
 	if err != nil {
 		logger.Error("failed to connect vault", "error", err)
+		os.Exit(1)
+	}
+
+	components, err := component.Load(ctx, c.GithubOrganization)
+	if err != nil {
+		logger.Error("failed to load components", "error", err)
 		os.Exit(1)
 	}
 
@@ -33,6 +51,7 @@ func main() {
 		Validator:         validator.New(validator.WithRequiredStructEnabled()),
 		ClusterRepository: vault.NewRepository[model.Cluster](v, "clusters"),
 		Config:            &c,
+		Components:        components,
 	}
 
 	if err = h.Start(); err != nil {

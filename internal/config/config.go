@@ -7,11 +7,14 @@ import (
 )
 
 type Config struct {
-	ServerAddr        string `env:"SERVER_ADDR"`
-	ServerRoutePrefix string `env:"SERVER_ROUTE_PREFIX"`
-	VaultAddr         string `env:"VAULT_ADDR"`
-	VaultEngine       string `env:"VAULT_ENGINE"`
-	VaultToken        string `env:"VAULT_TOKEN"`
+	ServerAddr             string `env:"SERVER_ADDR"`
+	ServerRoutePrefix      string `env:"SERVER_ROUTE_PREFIX"`
+	ServerInitTimeout      string `env:"SERVER_INIT_TIMEOUT"`
+	VaultAddr              string `env:"VAULT_ADDR"`
+	VaultEngine            string `env:"VAULT_ENGINE"`
+	VaultToken             string `env:"VAULT_TOKEN"`
+	VaultEngineDescription string `env:"VAULT_ENGINE_DESCRIPTION"`
+	GithubOrganization     string `env:"GITHUB_ORGANIZATION"`
 }
 
 func (c *Config) Load() error {

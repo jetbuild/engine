@@ -7,3 +7,7 @@ type ListClustersResponse struct {
 type ListNamespacesResponse struct {
 	Items []Namespace `json:"items"`
 }
+
+type ListComponentsResponse struct {
+	Items []Component `json:"items"`
+}

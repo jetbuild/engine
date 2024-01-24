@@ -35,7 +35,7 @@ type vault[T any] struct {
 	key    string
 }
 
-func New(addr, token, engine, description string) (*Client, error) {
+func New(ctx context.Context, addr, token, engine, description string) (*Client, error) {
 	c, err := va.New(va.WithAddress(addr))
 	if err != nil {
 		return nil, err
@@ -45,10 +45,10 @@ func New(addr, token, engine, description string) (*Client, error) {
 		return nil, err
 	}
 
-	if _, err = c.System.MountsEnableSecretsEngine(context.Background(), engine, schema.MountsEnableSecretsEngineRequest{
+	if _, err = c.System.MountsEnableSecretsEngine(ctx, engine, schema.MountsEnableSecretsEngineRequest{
 		Description: description,
 		Type:        "kv",
-	}); err != nil && !strings.Contains(err.(*va.ResponseError).Errors[0], "path is already in use") {
+	}); err != nil && !strings.Contains(err.Error(), "path is already in use") {
 		return nil, err
 	}
 
