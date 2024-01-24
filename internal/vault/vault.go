@@ -1,4 +1,4 @@
-package vault
+package vault // TODO: storage?
 
 import (
 	"context"

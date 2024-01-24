@@ -50,6 +50,7 @@ func main() {
 	h := handler.Handler{
 		Validator:         validator.New(validator.WithRequiredStructEnabled()),
 		ClusterRepository: vault.NewRepository[model.Cluster](v, "clusters"),
+		FlowRepository:    vault.NewRepository[model.Flow](v, "flows"),
 		Config:            &c,
 		Components:        components,
 	}
