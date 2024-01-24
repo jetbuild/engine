@@ -32,8 +32,8 @@ func (h *Handler) Start() error {
 		Get("/readyz", h.checkHealth).
 		Get("/clusters", h.listClusters).
 		Post("/clusters", h.addCluster).
-		Get("/clusters/:name/namespaces", h.listNamespaces).
-		Post("/clusters/:name/namespaces", h.addNamespace).
+		Get("/clusters/:name/namespaces", h.listClusterNamespaces).
+		Post("/clusters/:name/namespaces", h.addClusterNamespace).
 		Get("/components", h.listComponents).
 		Post("/flows", h.addFlow)
 

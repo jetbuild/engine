@@ -4,8 +4,8 @@ type ListClustersResponse struct {
 	Items []Cluster `json:"items"`
 }
 
-type ListNamespacesResponse struct {
-	Items []Namespace `json:"items"`
+type ListClusterNamespacesResponse struct {
+	Items []ClusterNamespace `json:"items"`
 }
 
 type ListComponentsResponse struct {

@@ -10,14 +10,14 @@ import (
 	"github.com/jetbuild/engine/internal/vault"
 )
 
-func (h *Handler) listNamespaces(ctx *fiber.Ctx) error {
-	var req model.ListNamespacesRequest
+func (h *Handler) listClusterNamespaces(ctx *fiber.Ctx) error {
+	var req model.ListClusterNamespacesRequest
 	if err := req.Bind(ctx, h.Validator); err != nil {
 		return err
 	}
 
-	res := model.ListNamespacesResponse{
-		Items: make([]model.Namespace, 0),
+	res := model.ListClusterNamespacesResponse{
+		Items: make([]model.ClusterNamespace, 0),
 	}
 
 	cluster, err := h.ClusterRepository.Get(ctx.UserContext(), req.Params.ClusterName)
@@ -35,11 +35,11 @@ func (h *Handler) listNamespaces(ctx *fiber.Ctx) error {
 
 	namespaces, err := c.ListNamespaces(ctx.UserContext())
 	if err != nil {
-		return fmt.Errorf("failed to list namespaces: %w", err)
+		return fmt.Errorf("failed to list cluster namespaces: %w", err)
 	}
 
 	for _, namespace := range namespaces.Items {
-		res.Items = append(res.Items, model.Namespace{
+		res.Items = append(res.Items, model.ClusterNamespace{
 			Name: namespace.Name,
 		})
 	}

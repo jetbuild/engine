@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type AddNamespaceRequest struct {
+type AddClusterNamespaceRequest struct {
 	Body struct {
 		Name string `json:"name" validate:"required"`
 	}
@@ -18,7 +18,7 @@ type AddNamespaceRequest struct {
 	}
 }
 
-func (r *AddNamespaceRequest) Bind(ctx *fiber.Ctx, v *validator.Validate) error {
+func (r *AddClusterNamespaceRequest) Bind(ctx *fiber.Ctx, v *validator.Validate) error {
 	if err := ctx.BodyParser(&r.Body); err != nil {
 		return fmt.Errorf("failed to parse request body: %w", err)
 	}
@@ -38,13 +38,13 @@ func (r *AddNamespaceRequest) Bind(ctx *fiber.Ctx, v *validator.Validate) error 
 	return nil
 }
 
-type ListNamespacesRequest struct {
+type ListClusterNamespacesRequest struct {
 	Params struct {
 		ClusterName string `params:"name" validate:"required"`
 	}
 }
 
-func (r *ListNamespacesRequest) Bind(ctx *fiber.Ctx, v *validator.Validate) error {
+func (r *ListClusterNamespacesRequest) Bind(ctx *fiber.Ctx, v *validator.Validate) error {
 	if err := ctx.ParamsParser(&r.Params); err != nil {
 		return fmt.Errorf("failed to parse request params: %w", err)
 	}

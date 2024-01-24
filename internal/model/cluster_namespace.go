@@ -1,5 +1,5 @@
 package model
 
-type Namespace struct {
+type ClusterNamespace struct {
 	Name string `json:"name,omitempty"`
 }

@@ -11,8 +11,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
-func (h *Handler) addNamespace(ctx *fiber.Ctx) error {
-	var req model.AddNamespaceRequest
+func (h *Handler) addClusterNamespace(ctx *fiber.Ctx) error {
+	var req model.AddClusterNamespaceRequest
 	if err := req.Bind(ctx, h.Validator); err != nil {
 		return err
 	}
@@ -32,10 +32,10 @@ func (h *Handler) addNamespace(ctx *fiber.Ctx) error {
 
 	err = c.CreateNamespace(ctx.UserContext(), req.Body.Name)
 	if apierrors.IsAlreadyExists(err) {
-		return fiber.NewError(fiber.StatusConflict, fmt.Sprintf("namespace '%s' already exist", req.Body.Name))
+		return fiber.NewError(fiber.StatusConflict, fmt.Sprintf("cluster namespace '%s' already exist", req.Body.Name))
 	}
 	if err != nil {
-		return fmt.Errorf("failed to create namespace: %w", err)
+		return fmt.Errorf("failed to create cluster namespace: %w", err)
 	}
 
 	ctx.Status(fiber.StatusCreated)
