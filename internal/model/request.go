@@ -57,10 +57,15 @@ func (r *ListClusterNamespacesRequest) Bind(ctx *fiber.Ctx, v *validator.Validat
 }
 
 type AddFlowRequest struct {
-	Name      string           `json:"name" validate:"required"`
-	Component string           `json:"component" validate:"required"`
-	Arguments map[string]any   `json:"arguments"`
-	Stages    []AddFlowRequest `json:"stages" validate:"dive"`
+	Name      string                  `json:"name" validate:"required"`
+	Component AddFlowRequestComponent `json:"component" validate:"required"`
+	Stages    []AddFlowRequest        `json:"stages" validate:"dive"`
+}
+
+type AddFlowRequestComponent struct {
+	Key       string         `json:"key" validate:"required"`
+	Version   string         `json:"-"`
+	Arguments map[string]any `json:"arguments"`
 }
 
 func (r *AddFlowRequest) Bind(ctx *fiber.Ctx, v *validator.Validate, components []Component) error {
@@ -82,7 +87,7 @@ func (r *AddFlowRequest) Bind(ctx *fiber.Ctx, v *validator.Validate, components 
 func (r *AddFlowRequest) Validate(trigger bool, components []Component) error {
 	var component *Component
 	for _, c := range components {
-		if c.Key == r.Component {
+		if c.Key == r.Component.Key {
 			component = &c
 
 			break
@@ -90,14 +95,16 @@ func (r *AddFlowRequest) Validate(trigger bool, components []Component) error {
 	}
 
 	if component == nil {
-		return fmt.Errorf("component '%s' does not found", r.Component)
+		return fmt.Errorf("component '%s' does not found", r.Component.Key)
 	}
+
+	r.Component.Version = component.Version
 
 	if trigger != *component.Trigger {
-		return fmt.Errorf("component '%s' trigger type is invalid", r.Component)
+		return fmt.Errorf("component '%s' trigger type is invalid", r.Component.Key)
 	}
 
-	for k, v := range r.Arguments {
+	for k, v := range r.Component.Arguments {
 		var found *ComponentArgument
 		for _, arg := range component.Arguments {
 			if k == arg.Key {
@@ -133,7 +140,7 @@ func (r *AddFlowRequest) Validate(trigger bool, components []Component) error {
 			continue
 		}
 
-		if _, exist := r.Arguments[arg.Key]; !exist {
+		if _, exist := r.Component.Arguments[arg.Key]; !exist {
 			return fmt.Errorf("argument '%s' is required", arg.Key)
 		}
 	}
@@ -149,9 +156,12 @@ func (r *AddFlowRequest) Validate(trigger bool, components []Component) error {
 
 func (r *AddFlowRequest) ToFlow() Flow {
 	flow := Flow{
-		Name:      r.Name,
-		Component: r.Component,
-		Arguments: r.Arguments,
+		Name: r.Name,
+		Component: FlowComponent{
+			Key:       r.Component.Key,
+			Version:   r.Component.Version,
+			Arguments: r.Component.Arguments,
+		},
 	}
 
 	for _, stage := range r.Stages {
