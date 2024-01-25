@@ -9,7 +9,7 @@ const (
 )
 
 type Component struct {
-	Version     float64             `json:"version,omitempty" yaml:"version"`
+	Version     string              `json:"version,omitempty" yaml:"version"`
 	Key         string              `json:"key,omitempty" yaml:"key"`
 	Name        string              `json:"name,omitempty" yaml:"name"`
 	Description string              `json:"description,omitempty" yaml:"description"`
@@ -28,7 +28,7 @@ type ComponentArgument struct {
 type ComponentArgumentType string
 
 func (c *Component) Validate() error {
-	if c.Version == 0 {
+	if len(c.Version) == 0 {
 		return fmt.Errorf("component 'version' field does not found")
 	}
 
