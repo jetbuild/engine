@@ -10,6 +10,7 @@ const (
 
 type Component struct {
 	Version     string              `json:"version,omitempty" yaml:"version"`
+	Image       string              `json:"-" yaml:"image"`
 	Key         string              `json:"key,omitempty" yaml:"key"`
 	Name        string              `json:"name,omitempty" yaml:"name"`
 	Description string              `json:"description,omitempty" yaml:"description"`
@@ -30,6 +31,10 @@ type ComponentArgumentType string
 func (c *Component) Validate() error {
 	if len(c.Version) == 0 {
 		return fmt.Errorf("component 'version' field does not found")
+	}
+
+	if len(c.Image) == 0 {
+		return fmt.Errorf("component 'image' field does not found")
 	}
 
 	if len(c.Key) == 0 {

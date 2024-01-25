@@ -67,11 +67,11 @@ func (h *Handler) listComponents(ctx *fiber.Ctx) error {
 		var component model.Component
 
 		if err = yaml.NewDecoder(c).Decode(&component); err != nil {
-			return fmt.Errorf("failed to decode component spec file content from github '%s' org '%s' repository: %w", org, s[0], cErr)
+			return fmt.Errorf("failed to decode component spec file content from github '%s' org '%s' repository: %w", org, s[0], err)
 		}
 
 		if err = component.Validate(); err != nil {
-			return fmt.Errorf("failed to validate component spec file content from github '%s' org '%s' repository: %w", org, s[0], cErr)
+			return fmt.Errorf("failed to validate component spec file content from github '%s' org '%s' repository: %w", org, s[0], err)
 		}
 
 		list = append(list, component)
