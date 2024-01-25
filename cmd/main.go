@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/jetbuild/engine/internal/component"
 	"github.com/jetbuild/engine/internal/config"
+	"github.com/jetbuild/engine/internal/github"
 	"github.com/jetbuild/engine/internal/handler"
 	"github.com/jetbuild/engine/internal/model"
 	"github.com/jetbuild/engine/internal/vault"
@@ -41,19 +41,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	components, err := component.Load(ctx, c.GithubOrganization)
-	if err != nil {
-		logger.Error("failed to load components", "error", err)
-		os.Exit(1)
-	}
-
 	h := handler.Handler{
 		Validator:         validator.New(validator.WithRequiredStructEnabled()),
 		ClusterRepository: vault.NewRepository[model.Cluster](v, "clusters"),
 		FlowRepository:    vault.NewRepository[model.Flow](v, "flows"),
 		Config:            &c,
-		Components:        components,
 		Logger:            logger,
+		GitHub:            github.New(c.GithubOrganization),
 	}
 
 	if err = h.Start(); err != nil {

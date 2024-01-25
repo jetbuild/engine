@@ -11,3 +11,14 @@ type FlowComponent struct {
 	Version   string         `json:"version,omitempty"`
 	Arguments map[string]any `json:"arguments,omitempty"`
 }
+
+func (f *Flow) GetComponents() []FlowComponent {
+	var components []FlowComponent
+	components = append(components, f.Component)
+
+	for _, stage := range f.Stages {
+		components = append(components, stage.GetComponents()...)
+	}
+
+	return components
+}
