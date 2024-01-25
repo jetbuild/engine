@@ -2,6 +2,8 @@ package handler
 
 import (
 	"errors"
+	"log/slog"
+	"os"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -17,6 +19,7 @@ type Handler struct {
 	FlowRepository    vault.Vault[model.Flow]
 	Config            *config.Config
 	Components        []model.Component
+	Logger            *slog.Logger
 }
 
 func (h *Handler) Start() error {
@@ -36,6 +39,12 @@ func (h *Handler) Start() error {
 		Post("/clusters/:name/namespaces", h.addClusterNamespace).
 		Get("/components", h.listComponents).
 		Post("/flows", h.addFlow)
+
+	h.Logger.Info("server started",
+		slog.String("addr", h.Config.ServerAddr),
+		slog.Uint64("handlers", uint64(f.HandlersCount())),
+		slog.Int("pid", os.Getpid()),
+	)
 
 	return f.Listen(h.Config.ServerAddr)
 }

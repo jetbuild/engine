@@ -53,6 +53,7 @@ func main() {
 		FlowRepository:    vault.NewRepository[model.Flow](v, "flows"),
 		Config:            &c,
 		Components:        components,
+		Logger:            logger,
 	}
 
 	if err = h.Start(); err != nil {
