@@ -25,7 +25,7 @@ func (h *Handler) addClusterNamespace(ctx *fiber.Ctx) error {
 		return fmt.Errorf("failed to get cluster from vault: %w", err)
 	}
 
-	c, err := k8s.New(*cluster.Config)
+	c, err := k8s.New(cluster.Config)
 	if err != nil {
 		return fmt.Errorf("failed to create kubernetes client: %w", err)
 	}

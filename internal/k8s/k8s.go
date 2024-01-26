@@ -2,18 +2,19 @@ package k8s
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"mime/multipart"
 
+	"gopkg.in/yaml.v3"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/tools/clientcmd/api"
 )
 
 type K8S interface {
-	GetConfig() *api.Config
+	GetConfig() any
 	GetClusterName() string
 	HasAdminPrivileges(ctx context.Context) (bool, error)
 	CreateNamespace(ctx context.Context, name string) error
@@ -22,12 +23,22 @@ type K8S interface {
 
 type k8s struct {
 	client      *kubernetes.Clientset
-	config      *api.Config
+	config      any
 	clusterName string
 }
 
-func New(c api.Config) (K8S, error) {
-	r, err := clientcmd.NewDefaultClientConfig(c, nil).ClientConfig()
+func New(cfg any) (K8S, error) {
+	c, err := json.Marshal(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load kube config file: %w", err)
+	}
+
+	cl, err := clientcmd.Load(c)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load kube config file: %w", err)
+	}
+
+	r, err := clientcmd.NewDefaultClientConfig(*cl, nil).ClientConfig()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new default client config: %w", err)
 	}
@@ -90,14 +101,19 @@ func NewFromFormFile(f *multipart.FileHeader) (K8S, error) {
 		return nil, fmt.Errorf("failed to create client: %w", err)
 	}
 
+	var cfg any
+	if err = yaml.Unmarshal(p, &cfg); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal kube config file: %w", err)
+	}
+
 	return &k8s{
 		client:      client,
-		config:      c,
+		config:      cfg,
 		clusterName: cx.Cluster,
 	}, nil
 }
 
-func (k *k8s) GetConfig() *api.Config {
+func (k *k8s) GetConfig() any {
 	return k.config
 }
 
