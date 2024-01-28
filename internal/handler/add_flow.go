@@ -15,7 +15,23 @@ func (h *Handler) addFlow(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	err := h.FlowRepository.Add(ctx.UserContext(), req.Name, req.ToFlow())
+	f := model.Flow{
+		Name: req.Name,
+	}
+
+	for _, c := range req.Components {
+		f.Components = append(f.Components, model.FlowComponent{
+			Key:       c.Key,
+			Version:   c.Version,
+			Arguments: c.Arguments,
+			Connections: &model.FlowComponentConnection{
+				Sources: c.Connections.Sources,
+				Targets: c.Connections.Targets,
+			},
+		})
+	}
+
+	err := h.FlowRepository.Add(ctx.UserContext(), req.Name, f)
 	if err != nil && errors.Is(err, vault.ErrItemAlreadyExist) {
 		return fiber.NewError(fiber.StatusConflict, fmt.Sprintf("flow '%s' already exist", req.Name))
 	}

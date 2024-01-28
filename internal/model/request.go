@@ -57,15 +57,20 @@ func (r *ListClusterNamespacesRequest) Bind(ctx *fiber.Ctx, v *validator.Validat
 }
 
 type AddFlowRequest struct {
-	Name      string                  `json:"name" validate:"required"`
-	Component AddFlowRequestComponent `json:"component" validate:"required"`
-	Stages    []AddFlowRequest        `json:"stages" validate:"dive"`
+	Name       string                    `json:"name" validate:"required"`
+	Components []AddFlowRequestComponent `json:"components" validate:"min=1,dive"`
 }
 
 type AddFlowRequestComponent struct {
-	Key       string         `json:"key" validate:"required"`
-	Version   string         `json:"-"`
-	Arguments map[string]any `json:"arguments"`
+	Key         string                            `json:"key" validate:"required"`
+	Version     string                            `json:"-"`
+	Arguments   map[string]any                    `json:"arguments"`
+	Connections AddFlowRequestComponentConnection `json:"connections"`
+}
+
+type AddFlowRequestComponentConnection struct {
+	Sources []uint `json:"sources"`
+	Targets []uint `json:"targets"`
 }
 
 func (r *AddFlowRequest) Bind(ctx *fiber.Ctx, v *validator.Validate, components []Component) error {
@@ -77,96 +82,82 @@ func (r *AddFlowRequest) Bind(ctx *fiber.Ctx, v *validator.Validate, components 
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	if err := r.Validate(true, components); err != nil {
+	if err := r.Validate(components); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (r *AddFlowRequest) Validate(trigger bool, components []Component) error {
-	var component *Component
-	for _, c := range components {
-		if c.Key == r.Component.Key {
-			component = &c
+func (r *AddFlowRequest) Validate(components []Component) error {
+	for i, c := range r.Components {
+		var component *Component
 
-			break
-		}
-	}
-
-	if component == nil {
-		return fmt.Errorf("component '%s' does not found", r.Component.Key)
-	}
-
-	r.Component.Version = component.Version
-
-	if trigger != *component.Trigger {
-		return fmt.Errorf("component '%s' trigger type is invalid", r.Component.Key)
-	}
-
-	for k, v := range r.Component.Arguments {
-		var found *ComponentArgument
-		for _, arg := range component.Arguments {
-			if k == arg.Key {
-				found = &arg
+		for _, cp := range components {
+			if c.Key == cp.Key {
+				component = &cp
 
 				break
 			}
 		}
 
-		if found == nil {
-			return fmt.Errorf("argument '%s' is not found", k)
+		if component == nil {
+			return fmt.Errorf("components[%d].key '%s' does not found", i, c.Key)
 		}
 
-		if v == nil || v == "" {
-			return fmt.Errorf("argument '%s' is empty", k)
+		r.Components[i].Version = component.Version
+
+		if i == 0 && !*component.Trigger {
+			return fmt.Errorf("components[%d] is not a trigger", i)
 		}
 
-		if found.Type == ComponentArgumentTypeString && reflect.ValueOf(v).Kind() != reflect.String {
-			return fmt.Errorf("argument '%s' is not a string", k)
+		if i != 0 && *component.Trigger {
+			return fmt.Errorf("components[%d] cannot be a trigger", i)
 		}
 
-		if found.Type == ComponentArgumentTypeNumber && reflect.ValueOf(v).Kind() != reflect.Float64 {
-			return fmt.Errorf("argument '%s' is not a number", k)
+		for k, v := range c.Arguments {
+			var found *ComponentArgument
+			for _, arg := range component.Arguments {
+				if k == arg.Key {
+					found = &arg
+
+					break
+				}
+			}
+
+			if found == nil {
+				return fmt.Errorf("components[%d].arguments '%s' is not found", i, k)
+			}
+
+			if v == nil || v == "" {
+				return fmt.Errorf("components[%d].arguments '%s' is empty", i, k)
+			}
+
+			if found.Type == ComponentArgumentTypeString && reflect.ValueOf(v).Kind() != reflect.String {
+				return fmt.Errorf("components[%d].arguments '%s' is not a string", i, k)
+			}
+
+			if found.Type == ComponentArgumentTypeNumber && reflect.ValueOf(v).Kind() != reflect.Float64 {
+				return fmt.Errorf("components[%d].arguments '%s' is not a number", i, k)
+			}
+
+			if found.Type == ComponentArgumentTypeBool && reflect.ValueOf(v).Kind() != reflect.Bool {
+				return fmt.Errorf("components[%d].arguments '%s' is not a bool", i, k)
+			}
 		}
 
-		if found.Type == ComponentArgumentTypeBool && reflect.ValueOf(v).Kind() != reflect.Bool {
-			return fmt.Errorf("argument '%s' is not a bool", k)
-		}
-	}
+		for _, arg := range component.Arguments {
+			if !*arg.Required {
+				continue
+			}
 
-	for _, arg := range component.Arguments {
-		if !*arg.Required {
-			continue
+			if _, exist := c.Arguments[arg.Key]; !exist {
+				return fmt.Errorf("components[%d].arguments '%s' is required", i, arg.Key)
+			}
 		}
 
-		if _, exist := r.Component.Arguments[arg.Key]; !exist {
-			return fmt.Errorf("argument '%s' is required", arg.Key)
-		}
-	}
-
-	for _, s := range r.Stages {
-		if err := s.Validate(false, components); err != nil {
-			return err
-		}
+		// TODO: add connections validation
 	}
 
 	return nil
-}
-
-func (r *AddFlowRequest) ToFlow() Flow {
-	flow := Flow{
-		Name: r.Name,
-		Component: FlowComponent{
-			Key:       r.Component.Key,
-			Version:   r.Component.Version,
-			Arguments: r.Component.Arguments,
-		},
-	}
-
-	for _, stage := range r.Stages {
-		flow.Stages = append(flow.Stages, stage.ToFlow())
-	}
-
-	return flow
 }

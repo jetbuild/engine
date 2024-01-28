@@ -26,7 +26,7 @@ func (h *Handler) listComponents(ctx *fiber.Ctx) error {
 
 	components := make(map[string]struct{})
 	for _, f := range flows {
-		for _, c := range f.GetComponents() {
+		for _, c := range f.Components {
 			components[fmt.Sprintf("%s-component:v%s", c.Key, c.Version)] = struct{}{}
 		}
 	}
