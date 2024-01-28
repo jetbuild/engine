@@ -43,7 +43,5 @@ func (h *Handler) addCluster(ctx *fiber.Ctx) error {
 		return fmt.Errorf("failed to save cluster to vault: %w", err)
 	}
 
-	ctx.Status(fiber.StatusCreated)
-
-	return nil
+	return ctx.SendStatus(fiber.StatusCreated)
 }

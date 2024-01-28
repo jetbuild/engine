@@ -38,7 +38,5 @@ func (h *Handler) addClusterNamespace(ctx *fiber.Ctx) error {
 		return fmt.Errorf("failed to create cluster namespace: %w", err)
 	}
 
-	ctx.Status(fiber.StatusCreated)
-
-	return nil
+	return ctx.SendStatus(fiber.StatusCreated)
 }

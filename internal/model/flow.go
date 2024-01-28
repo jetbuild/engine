@@ -1,24 +1,18 @@
 package model
 
 type Flow struct {
-	Name      string        `json:"name,omitempty"`
-	Component FlowComponent `json:"component,omitempty"`
-	Stages    []Flow        `json:"stages,omitempty"`
+	Name       string          `json:"name,omitempty"`
+	Components []FlowComponent `json:"components,omitempty"`
 }
 
 type FlowComponent struct {
-	Key       string         `json:"key,omitempty"`
-	Version   string         `json:"version,omitempty"`
-	Arguments map[string]any `json:"arguments,omitempty"`
+	Key         string                   `json:"key,omitempty"`
+	Version     string                   `json:"version,omitempty"`
+	Arguments   map[string]any           `json:"arguments,omitempty"`
+	Connections *FlowComponentConnection `json:"connections,omitempty"`
 }
 
-func (f *Flow) GetComponents() []FlowComponent {
-	var components []FlowComponent
-	components = append(components, f.Component)
-
-	for _, stage := range f.Stages {
-		components = append(components, stage.GetComponents()...)
-	}
-
-	return components
+type FlowComponentConnection struct {
+	Sources []uint `json:"sources,omitempty"`
+	Targets []uint `json:"targets,omitempty"`
 }
