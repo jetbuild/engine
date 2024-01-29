@@ -25,7 +25,6 @@ func (h *Handler) addFlow(ctx *fiber.Ctx) error {
 			Version:   c.Version,
 			Arguments: c.Arguments,
 			Connections: &model.FlowComponentConnection{
-				Sources: c.Connections.Sources,
 				Targets: c.Connections.Targets,
 			},
 		})
@@ -39,5 +38,7 @@ func (h *Handler) addFlow(ctx *fiber.Ctx) error {
 		return fmt.Errorf("failed to save flow to vault: %w", err)
 	}
 
-	return ctx.SendStatus(fiber.StatusCreated)
+	ctx.Status(fiber.StatusCreated)
+
+	return nil
 }

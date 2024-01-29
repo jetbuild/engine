@@ -11,5 +11,7 @@ func (h *Handler) checkHealth(ctx *fiber.Ctx) error {
 		return fmt.Errorf("failed to ping vault: %w", err)
 	}
 
-	return ctx.SendStatus(fiber.StatusNoContent)
+	ctx.Status(fiber.StatusNoContent)
+
+	return nil
 }

@@ -65,11 +65,10 @@ type AddFlowRequestComponent struct {
 	Key         string                            `json:"key" validate:"required"`
 	Version     string                            `json:"-"`
 	Arguments   map[string]any                    `json:"arguments"`
-	Connections AddFlowRequestComponentConnection `json:"connections"`
+	Connections AddFlowRequestComponentConnection `json:"connections" validate:"required"`
 }
 
 type AddFlowRequestComponentConnection struct {
-	Sources []uint `json:"sources"`
 	Targets []uint `json:"targets"`
 }
 
@@ -91,6 +90,11 @@ func (r *AddFlowRequest) Bind(ctx *fiber.Ctx, v *validator.Validate, components 
 
 func (r *AddFlowRequest) Validate(components []Component) error {
 	for i, c := range r.Components {
+		var isTrigger bool
+		if i == 0 {
+			isTrigger = true
+		}
+
 		var component *Component
 
 		for _, cp := range components {
@@ -107,11 +111,11 @@ func (r *AddFlowRequest) Validate(components []Component) error {
 
 		r.Components[i].Version = component.Version
 
-		if i == 0 && !*component.Trigger {
+		if isTrigger && !*component.Trigger {
 			return fmt.Errorf("components[%d] is not a trigger", i)
 		}
 
-		if i != 0 && *component.Trigger {
+		if !isTrigger && *component.Trigger {
 			return fmt.Errorf("components[%d] cannot be a trigger", i)
 		}
 
@@ -156,7 +160,19 @@ func (r *AddFlowRequest) Validate(components []Component) error {
 			}
 		}
 
-		// TODO: add connections validation
+		if isTrigger && len(c.Connections.Targets) == 0 {
+			return fmt.Errorf("components[%d].connections.targets is empty", i)
+		}
+
+		for _, target := range c.Connections.Targets {
+			if target == 0 || int(target) == i {
+				return fmt.Errorf("components[%d].connections.targets.%d is invalid", i, target)
+			}
+
+			if int(target) >= len(r.Components) {
+				return fmt.Errorf("components[%d].connections.targets.%d is invalid", i, target)
+			}
+		}
 	}
 
 	return nil

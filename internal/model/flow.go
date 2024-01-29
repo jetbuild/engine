@@ -13,6 +13,5 @@ type FlowComponent struct {
 }
 
 type FlowComponentConnection struct {
-	Sources []uint `json:"sources,omitempty"`
 	Targets []uint `json:"targets,omitempty"`
 }
