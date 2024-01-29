@@ -11,3 +11,7 @@ type ListClusterNamespacesResponse struct {
 type ListComponentsResponse struct {
 	Items []Component `json:"items"`
 }
+
+type ListFlowsResponse struct {
+	Items []Flow `json:"items"`
+}

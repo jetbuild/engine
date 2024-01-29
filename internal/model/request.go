@@ -65,7 +65,7 @@ type AddFlowRequestComponent struct {
 	Key         string                            `json:"key" validate:"required"`
 	Version     string                            `json:"-"`
 	Arguments   map[string]any                    `json:"arguments"`
-	Connections AddFlowRequestComponentConnection `json:"connections" validate:"required"`
+	Connections AddFlowRequestComponentConnection `json:"connections"`
 }
 
 type AddFlowRequestComponentConnection struct {

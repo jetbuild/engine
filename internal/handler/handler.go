@@ -42,6 +42,7 @@ func (h *Handler) Start() error {
 		Get("/clusters/:name/namespaces", h.listClusterNamespaces).
 		Post("/clusters/:name/namespaces", h.addClusterNamespace).
 		Get("/components", h.listComponents).
+		Get("/flows", h.listFlows).
 		Post("/flows", h.addFlow)
 
 	h.Logger.Info("server started",
