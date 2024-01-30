@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -17,13 +19,14 @@ import (
 )
 
 type Handler struct {
-	Validator         *validator.Validate
-	ClusterRepository vault.Vault[model.Cluster]
-	FlowRepository    vault.Vault[model.Flow]
-	Config            *config.Config
-	Components        []model.Component
-	Logger            *slog.Logger
-	GitHub            github.GitHub
+	Validator           *validator.Validate
+	ClusterRepository   vault.Vault[model.Cluster]
+	FlowRepository      vault.Vault[model.Flow]
+	Config              *config.Config
+	Components          []model.Component
+	Logger              *slog.Logger
+	GitHub              github.GitHub
+	LatestRunnerVersion string
 }
 
 func (h *Handler) Start() error {
@@ -43,13 +46,33 @@ func (h *Handler) Start() error {
 		Post("/clusters/:name/namespaces", h.addClusterNamespace).
 		Get("/components", h.listComponents).
 		Get("/flows", h.listFlows).
-		Post("/flows", h.addFlow)
+		Post("/flows", h.addFlow).
+		Post("/flows/:name/runners", h.addFlowRunner)
 
-	h.Logger.Info("server started",
-		slog.String("addr", h.Config.ServerAddr),
-		slog.Uint64("handlers", uint64(f.HandlersCount())),
-		slog.Int("pid", os.Getpid()),
-	)
+	f.Hooks().OnListen(func(d fiber.ListenData) error {
+		if fiber.IsChild() {
+			return nil
+		}
+
+		scheme := "http"
+		if d.TLS {
+			scheme = "https"
+		}
+
+		h.Logger.Info("server started",
+			slog.String("addr", fmt.Sprintf("%s://%s:%s", scheme, d.Host, d.Port)),
+			slog.Uint64("handlers", uint64(f.HandlersCount())),
+			slog.Int("pid", os.Getpid()),
+		)
+
+		return nil
+	})
+
+	f.Hooks().OnShutdown(func() error {
+		h.Logger.Info("server stopped")
+
+		return nil
+	})
 
 	ctx := f.AcquireCtx(&fasthttp.RequestCtx{})
 	ctx.Locals("loadComponents", true)
@@ -58,7 +81,19 @@ func (h *Handler) Start() error {
 		return fmt.Errorf("failed to load components: %w", err)
 	}
 
-	return f.Listen(h.Config.ServerAddr)
+	go func() {
+		if err := f.Listen(h.Config.ServerAddr); err != nil {
+			h.Logger.Error("failed to start server", "error", err)
+			os.Exit(1)
+		}
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	_ = <-c
+	h.Logger.Info("server gracefully shutting down")
+
+	return f.Shutdown()
 }
 
 func errorHandler(ctx *fiber.Ctx, err error) error {

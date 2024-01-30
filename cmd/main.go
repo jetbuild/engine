@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -49,6 +50,14 @@ func main() {
 		Logger:            logger,
 		GitHub:            github.New(c.GithubOrganization),
 	}
+
+	t, err := h.GitHub.GetRepositoryLatestTag(ctx, "runner")
+	if err != nil {
+		logger.Error("failed to get latest runner repository tag", "error", err)
+		os.Exit(1)
+	}
+
+	h.LatestRunnerVersion = strings.TrimLeft(t, "v")
 
 	if err = h.Start(); err != nil {
 		logger.Error("failed to start server", "error", err)

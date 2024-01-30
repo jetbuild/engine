@@ -19,6 +19,8 @@ type K8S interface {
 	HasAdminPrivileges(ctx context.Context) (bool, error)
 	CreateNamespace(ctx context.Context, name string) error
 	ListNamespaces(ctx context.Context) (*corev1.NamespaceList, error)
+	CreateDeployment(ctx context.Context, namespace string) error
+	CreateHPA(ctx context.Context, namespace string) error
 }
 
 type k8s struct {

@@ -177,3 +177,34 @@ func (r *AddFlowRequest) Validate(components []Component) error {
 
 	return nil
 }
+
+type AddFlowRunnerRequest struct {
+	Body struct {
+		Cluster   string `json:"cluster" validate:"required"`
+		Namespace string `json:"namespace" validate:"required"`
+	}
+
+	Params struct {
+		FlowName string `params:"name" validate:"required"`
+	}
+}
+
+func (r *AddFlowRunnerRequest) Bind(ctx *fiber.Ctx, v *validator.Validate) error {
+	if err := ctx.BodyParser(&r.Body); err != nil {
+		return fmt.Errorf("failed to parse request body: %w", err)
+	}
+
+	if err := ctx.ParamsParser(&r.Params); err != nil {
+		return fmt.Errorf("failed to parse request params: %w", err)
+	}
+
+	if err := v.Struct(r.Body); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	if err := v.Struct(r.Params); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	return nil
+}
