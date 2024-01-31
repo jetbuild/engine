@@ -17,7 +17,7 @@ func (h *Handler) addClusterNamespace(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	cluster, err := h.ClusterRepository.Get(ctx.UserContext(), req.Params.ClusterName)
+	cluster, err := h.ClusterRepository.Get(ctx.Context(), req.Params.ClusterName)
 	if err != nil && errors.Is(err, vault.ErrKeyNotFound) {
 		return fiber.NewError(fiber.StatusNotFound, "cluster does not found in vault")
 	}
@@ -30,7 +30,7 @@ func (h *Handler) addClusterNamespace(ctx *fiber.Ctx) error {
 		return fmt.Errorf("failed to create kubernetes client: %w", err)
 	}
 
-	err = c.CreateNamespace(ctx.UserContext(), req.Body.Name)
+	err = c.CreateNamespace(ctx.Context(), req.Body.Name)
 	if apierrors.IsAlreadyExists(err) {
 		return fiber.NewError(fiber.StatusConflict, fmt.Sprintf("cluster namespace '%s' already exist", req.Body.Name))
 	}

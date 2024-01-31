@@ -7,7 +7,7 @@ import (
 )
 
 func (h *Handler) checkHealth(ctx *fiber.Ctx) error {
-	if err := h.ClusterRepository.Ping(ctx.UserContext()); err != nil {
+	if err := h.ClusterRepository.Ping(ctx.Context()); err != nil {
 		return fmt.Errorf("failed to ping vault: %w", err)
 	}
 

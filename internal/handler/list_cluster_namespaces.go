@@ -20,7 +20,7 @@ func (h *Handler) listClusterNamespaces(ctx *fiber.Ctx) error {
 		Items: make([]model.ClusterNamespace, 0),
 	}
 
-	cluster, err := h.ClusterRepository.Get(ctx.UserContext(), req.Params.ClusterName)
+	cluster, err := h.ClusterRepository.Get(ctx.Context(), req.Params.ClusterName)
 	if err != nil && errors.Is(err, vault.ErrKeyNotFound) {
 		return fiber.NewError(fiber.StatusNotFound, "cluster does not found in vault")
 	}
@@ -33,7 +33,7 @@ func (h *Handler) listClusterNamespaces(ctx *fiber.Ctx) error {
 		return fmt.Errorf("failed to create kubernetes client: %w", err)
 	}
 
-	namespaces, err := c.ListNamespaces(ctx.UserContext())
+	namespaces, err := c.ListNamespaces(ctx.Context())
 	if err != nil {
 		return fmt.Errorf("failed to list cluster namespaces: %w", err)
 	}

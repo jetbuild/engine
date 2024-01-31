@@ -14,7 +14,7 @@ func (h *Handler) listClusters(ctx *fiber.Ctx) error {
 		Items: make([]model.Cluster, 0),
 	}
 
-	clusters, err := h.ClusterRepository.List(ctx.UserContext())
+	clusters, err := h.ClusterRepository.List(ctx.Context())
 	if err != nil && errors.Is(err, vault.ErrKeyNotFound) {
 		return ctx.Status(fiber.StatusNotFound).JSON(res)
 	}

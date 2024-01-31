@@ -19,7 +19,7 @@ func (h *Handler) listComponents(ctx *fiber.Ctx) error {
 		})
 	}
 
-	flows, err := h.FlowRepository.List(ctx.UserContext())
+	flows, err := h.FlowRepository.List(ctx.Context())
 	if err != nil && !errors.Is(err, vault.ErrKeyNotFound) {
 		return fmt.Errorf("failed to list flows from vault: %w", err)
 	}
@@ -33,7 +33,7 @@ func (h *Handler) listComponents(ctx *fiber.Ctx) error {
 
 	org := h.GitHub.GetOrganizationName()
 
-	repos, err := h.GitHub.ListRepositories(ctx.UserContext())
+	repos, err := h.GitHub.ListRepositories(ctx.Context())
 	if err != nil {
 		return fmt.Errorf("failed to list github component repositories by '%s' org: %w", org, err)
 	}
@@ -59,7 +59,7 @@ func (h *Handler) listComponents(ctx *fiber.Ctx) error {
 	for repo := range components {
 		s := strings.Split(repo, ":")
 
-		c, cErr := h.GitHub.GetRepositoryContent(ctx.UserContext(), s[0], s[1], "spec.yml")
+		c, cErr := h.GitHub.GetRepositoryContent(ctx.Context(), s[0], s[1], "spec.yml")
 		if cErr != nil {
 			return fmt.Errorf("failed to get component spec file content from github '%s' org '%s' repository: %w", org, s[0], cErr)
 		}

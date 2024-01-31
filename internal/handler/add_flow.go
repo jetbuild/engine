@@ -30,7 +30,7 @@ func (h *Handler) addFlow(ctx *fiber.Ctx) error {
 		})
 	}
 
-	err := h.FlowRepository.Add(ctx.UserContext(), req.Name, f)
+	err := h.FlowRepository.Add(ctx.Context(), req.Name, f)
 	if err != nil && errors.Is(err, vault.ErrItemAlreadyExist) {
 		return fiber.NewError(fiber.StatusConflict, fmt.Sprintf("flow '%s' already exist", req.Name))
 	}

@@ -21,7 +21,7 @@ func (h *Handler) addCluster(ctx *fiber.Ctx) error {
 		return fmt.Errorf("failed to create kubernetes client: %w", err)
 	}
 
-	admin, err := cluster.HasAdminPrivileges(ctx.UserContext())
+	admin, err := cluster.HasAdminPrivileges(ctx.Context())
 	if err != nil {
 		return fmt.Errorf("failed to check admin priveleges: %w", err)
 	}
@@ -32,7 +32,7 @@ func (h *Handler) addCluster(ctx *fiber.Ctx) error {
 
 	name := cluster.GetClusterName()
 
-	err = h.ClusterRepository.Add(ctx.UserContext(), name, model.Cluster{
+	err = h.ClusterRepository.Add(ctx.Context(), name, model.Cluster{
 		Name:   name,
 		Config: cluster.GetConfig(),
 	})

@@ -14,7 +14,7 @@ func (h *Handler) listFlows(ctx *fiber.Ctx) error {
 		Items: make([]model.Flow, 0),
 	}
 
-	flows, err := h.FlowRepository.List(ctx.UserContext())
+	flows, err := h.FlowRepository.List(ctx.Context())
 	if err != nil && errors.Is(err, vault.ErrKeyNotFound) {
 		return ctx.Status(fiber.StatusNotFound).JSON(res)
 	}

@@ -18,7 +18,7 @@ func (h *Handler) addFlowRunner(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	flow, err := h.FlowRepository.Get(ctx.UserContext(), req.Params.FlowName)
+	flow, err := h.FlowRepository.Get(ctx.Context(), req.Params.FlowName)
 	if err != nil && errors.Is(err, vault.ErrKeyNotFound) {
 		return fiber.NewError(fiber.StatusNotFound, "flow does not found in vault")
 	}
@@ -32,7 +32,7 @@ func (h *Handler) addFlowRunner(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusConflict, "runner already exist for flow")
 	}
 
-	cluster, err := h.ClusterRepository.Get(ctx.UserContext(), req.Body.Cluster)
+	cluster, err := h.ClusterRepository.Get(ctx.Context(), req.Body.Cluster)
 	if err != nil && errors.Is(err, vault.ErrKeyNotFound) {
 		return fiber.NewError(fiber.StatusNotFound, "cluster does not found in vault")
 	}
@@ -45,7 +45,7 @@ func (h *Handler) addFlowRunner(ctx *fiber.Ctx) error {
 		return fmt.Errorf("failed to create kubernetes client: %w", err)
 	}
 
-	namespaces, err := c.ListNamespaces(ctx.UserContext())
+	namespaces, err := c.ListNamespaces(ctx.Context())
 	if err != nil {
 		return fmt.Errorf("failed to list cluster namespaces: %w", err)
 	}
@@ -62,11 +62,11 @@ func (h *Handler) addFlowRunner(ctx *fiber.Ctx) error {
 
 	// TODO: create necessary k8s resources
 	/*
-		if err = c.CreateDeployment(ctx.UserContext(), req.Body.Namespace); err != nil {
+		if err = c.CreateDeployment(ctx.Context(), req.Body.Namespace); err != nil {
 			return fmt.Errorf("failed to create deployment: %w", err)
 		}
 
-		if err = c.CreateHPA(ctx.UserContext(), req.Body.Namespace); err != nil {
+		if err = c.CreateHPA(ctx.Context(), req.Body.Namespace); err != nil {
 			return fmt.Errorf("failed to create hpa: %w", err)
 		}
 	*/
@@ -77,7 +77,7 @@ func (h *Handler) addFlowRunner(ctx *fiber.Ctx) error {
 		Version:   h.LatestRunnerVersion,
 	})
 
-	err = h.FlowRepository.Update(ctx.UserContext(), req.Params.FlowName, *flow)
+	err = h.FlowRepository.Update(ctx.Context(), req.Params.FlowName, *flow)
 	if err != nil && errors.Is(err, vault.ErrKeyNotFound) {
 		return fiber.NewError(fiber.StatusNotFound, "flow does not found in vault for update")
 	}
