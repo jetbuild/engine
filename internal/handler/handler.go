@@ -15,13 +15,14 @@ import (
 	"github.com/jetbuild/engine/internal/github"
 	"github.com/jetbuild/engine/internal/model"
 	"github.com/jetbuild/engine/internal/vault"
+	"github.com/jetbuild/engine/pkg/flow"
 	"github.com/valyala/fasthttp"
 )
 
 type Handler struct {
 	Validator           *validator.Validate
 	ClusterRepository   vault.Vault[model.Cluster]
-	FlowRepository      vault.Vault[model.Flow]
+	FlowRepository      vault.Vault[flow.Flow]
 	Config              *config.Config
 	Components          []model.Component
 	GitHub              github.GitHub

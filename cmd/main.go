@@ -13,6 +13,7 @@ import (
 	"github.com/jetbuild/engine/internal/handler"
 	"github.com/jetbuild/engine/internal/model"
 	"github.com/jetbuild/engine/internal/vault"
+	"github.com/jetbuild/engine/pkg/flow"
 )
 
 func main() {
@@ -45,7 +46,7 @@ func main() {
 	h := handler.Handler{
 		Validator:         validator.New(validator.WithRequiredStructEnabled()),
 		ClusterRepository: vault.NewRepository[model.Cluster](v, "clusters"),
-		FlowRepository:    vault.NewRepository[model.Flow](v, "flows"),
+		FlowRepository:    vault.NewRepository[flow.Flow](v, "flows"),
 		Config:            &c,
 		GitHub:            github.New(c.GithubOrganization),
 	}

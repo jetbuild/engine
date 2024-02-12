@@ -7,11 +7,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jetbuild/engine/internal/model"
 	"github.com/jetbuild/engine/internal/vault"
+	"github.com/jetbuild/engine/pkg/flow"
 )
 
 func (h *Handler) listFlows(ctx *fiber.Ctx) error {
 	res := model.ListFlowsResponse{
-		Items: make([]model.Flow, 0),
+		Items: make([]flow.Flow, 0),
 	}
 
 	flows, err := h.FlowRepository.List(ctx.Context())
@@ -22,8 +23,8 @@ func (h *Handler) listFlows(ctx *fiber.Ctx) error {
 		return fmt.Errorf("failed to list flows: %w", err)
 	}
 
-	for _, flow := range flows {
-		res.Items = append(res.Items, flow)
+	for _, f := range flows {
+		res.Items = append(res.Items, f)
 	}
 
 	return ctx.JSON(res)

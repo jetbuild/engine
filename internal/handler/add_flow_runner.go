@@ -9,6 +9,7 @@ import (
 	"github.com/jetbuild/engine/internal/k8s"
 	"github.com/jetbuild/engine/internal/model"
 	"github.com/jetbuild/engine/internal/vault"
+	"github.com/jetbuild/engine/pkg/flow"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -18,7 +19,7 @@ func (h *Handler) addFlowRunner(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	flow, err := h.FlowRepository.Get(ctx.Context(), req.Params.FlowName)
+	f, err := h.FlowRepository.Get(ctx.Context(), req.Params.FlowName)
 	if err != nil && errors.Is(err, vault.ErrKeyNotFound) {
 		return fiber.NewError(fiber.StatusNotFound, "flow does not found in vault")
 	}
@@ -26,7 +27,7 @@ func (h *Handler) addFlowRunner(ctx *fiber.Ctx) error {
 		return fmt.Errorf("failed to get flow from vault: %w", err)
 	}
 
-	if slices.ContainsFunc(flow.Runners, func(r model.FlowRunner) bool {
+	if slices.ContainsFunc(f.Runners, func(r flow.Runner) bool {
 		return r.Cluster == req.Body.Cluster
 	}) {
 		return fiber.NewError(fiber.StatusConflict, "runner already exist for flow")
@@ -71,13 +72,13 @@ func (h *Handler) addFlowRunner(ctx *fiber.Ctx) error {
 		}
 	*/
 
-	flow.Runners = append(flow.Runners, model.FlowRunner{
+	f.Runners = append(f.Runners, flow.Runner{
 		Cluster:   req.Body.Cluster,
 		Namespace: req.Body.Namespace,
 		Version:   h.LatestRunnerVersion,
 	})
 
-	err = h.FlowRepository.Update(ctx.Context(), req.Params.FlowName, *flow)
+	err = h.FlowRepository.Update(ctx.Context(), req.Params.FlowName, *f)
 	if err != nil && errors.Is(err, vault.ErrKeyNotFound) {
 		return fiber.NewError(fiber.StatusNotFound, "flow does not found in vault for update")
 	}

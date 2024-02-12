@@ -1,5 +1,7 @@
 package model
 
+import "github.com/jetbuild/engine/pkg/flow"
+
 type ListClustersResponse struct {
 	Items []Cluster `json:"items"`
 }
@@ -13,5 +15,5 @@ type ListComponentsResponse struct {
 }
 
 type ListFlowsResponse struct {
-	Items []Flow `json:"items"`
+	Items []flow.Flow `json:"items"`
 }

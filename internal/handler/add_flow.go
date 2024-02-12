@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jetbuild/engine/internal/model"
 	"github.com/jetbuild/engine/internal/vault"
+	"github.com/jetbuild/engine/pkg/flow"
 )
 
 func (h *Handler) addFlow(ctx *fiber.Ctx) error {
@@ -15,16 +16,16 @@ func (h *Handler) addFlow(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	f := model.Flow{
+	f := flow.Flow{
 		Name: req.Name,
 	}
 
 	for _, c := range req.Components {
-		f.Components = append(f.Components, model.FlowComponent{
+		f.Components = append(f.Components, flow.Component{
 			Key:       c.Key,
 			Version:   c.Version,
 			Arguments: c.Arguments,
-			Connections: &model.FlowComponentConnection{
+			Connections: &flow.ComponentConnection{
 				Targets: c.Connections.Targets,
 			},
 		})
