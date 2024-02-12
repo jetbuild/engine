@@ -24,7 +24,6 @@ type Handler struct {
 	FlowRepository      vault.Vault[model.Flow]
 	Config              *config.Config
 	Components          []model.Component
-	Logger              *slog.Logger
 	GitHub              github.GitHub
 	LatestRunnerVersion string
 }
@@ -59,7 +58,7 @@ func (h *Handler) Start() error {
 			scheme = "https"
 		}
 
-		h.Logger.Info("server started",
+		slog.Info("server started",
 			slog.String("addr", fmt.Sprintf("%s://%s:%s", scheme, d.Host, d.Port)),
 			slog.Uint64("handlers", uint64(f.HandlersCount())),
 			slog.Int("pid", os.Getpid()),
@@ -69,7 +68,7 @@ func (h *Handler) Start() error {
 	})
 
 	f.Hooks().OnShutdown(func() error {
-		h.Logger.Info("server stopped")
+		slog.Info("server stopped")
 
 		return nil
 	})
@@ -83,7 +82,7 @@ func (h *Handler) Start() error {
 
 	go func() {
 		if err := f.Listen(h.Config.ServerAddr); err != nil {
-			h.Logger.Error("failed to start server", "error", err)
+			slog.Error("failed to start server", "error", err)
 			os.Exit(1)
 		}
 	}()
@@ -91,7 +90,7 @@ func (h *Handler) Start() error {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	_ = <-c
-	h.Logger.Info("server gracefully shutting down")
+	slog.Info("server gracefully shutting down")
 
 	return f.Shutdown()
 }

@@ -16,20 +16,20 @@ import (
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,
 		Level:     slog.LevelDebug,
-	}))
+	})))
 
 	var c config.Config
 	if err := c.Load(); err != nil {
-		logger.Error("failed to load config", "error", err)
+		slog.Error("failed to load config", "error", err)
 		os.Exit(1)
 	}
 
 	timeout, err := time.ParseDuration(c.ServerInitTimeout)
 	if err != nil {
-		logger.Error("failed to parse server init timeout duration", "error", err)
+		slog.Error("failed to parse server init timeout duration", "error", err)
 		os.Exit(1)
 	}
 
@@ -38,7 +38,7 @@ func main() {
 
 	v, err := vault.New(ctx, c.VaultAddr, c.VaultToken, c.VaultEngine, c.VaultEngineDescription)
 	if err != nil {
-		logger.Error("failed to connect vault", "error", err)
+		slog.Error("failed to connect vault", "error", err)
 		os.Exit(1)
 	}
 
@@ -47,20 +47,19 @@ func main() {
 		ClusterRepository: vault.NewRepository[model.Cluster](v, "clusters"),
 		FlowRepository:    vault.NewRepository[model.Flow](v, "flows"),
 		Config:            &c,
-		Logger:            logger,
 		GitHub:            github.New(c.GithubOrganization),
 	}
 
 	t, err := h.GitHub.GetRepositoryLatestTag(ctx, "runner")
 	if err != nil {
-		logger.Error("failed to get latest runner repository tag", "error", err)
+		slog.Error("failed to get latest runner repository tag", "error", err)
 		os.Exit(1)
 	}
 
 	h.LatestRunnerVersion = strings.TrimLeft(t, "v")
 
 	if err = h.Start(); err != nil {
-		logger.Error("failed to start server", "error", err)
+		slog.Error("failed to start server", "error", err)
 		os.Exit(1)
 	}
 }
