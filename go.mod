@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/go-playground/validator/v10 v10.18.0
-	github.com/gofiber/fiber/v2 v2.52.0
+	github.com/gofiber/fiber/v2 v2.52.1
 	github.com/google/go-github/v58 v58.0.0
 	github.com/hashicorp/vault-client-go v0.4.3
 	github.com/valyala/fasthttp v1.52.0
